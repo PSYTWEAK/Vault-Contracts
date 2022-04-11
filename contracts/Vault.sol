@@ -4,6 +4,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "./VerifySignature.sol";
 import "./LockedERC721.sol";
+import "./VaultInternal.sol";
 
 /* 
 Yb    dP    db    88   88 88     888888 
@@ -12,7 +13,7 @@ Yb    dP    db    88   88 88     888888
    YP    dP""""Yb `YbodP' 88ood8   88  
 */
 
-contract Vault is Ownable, VerifySignature {
+contract Vault is VaultInternal, Ownable, VerifySignature {
     /*  
     ================================================================
                             State 
@@ -189,15 +190,6 @@ contract Vault is Ownable, VerifySignature {
                         Public View Functions 
     ================================================================ 
     */
-
-    function tokenURI(uint256 tokenId, address ERC721Addr)
-        public
-        view
-        override
-        returns (string memory)
-    {
-        return IERC721(ERC721Addr).tokenURI(tokenId);
-    }
 
     function onERC721Received(
         address,
