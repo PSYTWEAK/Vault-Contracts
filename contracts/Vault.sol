@@ -1,10 +1,9 @@
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-import "./INFT.sol";
 import "./VerifySignature.sol";
+import "./LockedERC721.sol";
 
 /* 
 Yb    dP    db    88   88 88     888888 
@@ -13,20 +12,20 @@ Yb    dP    db    88   88 88     888888
    YP    dP""""Yb `YbodP' 88ood8   88  
 */
 
-contract Vault is ERC721Enumerable, Ownable, VerifySignature {
+contract Vault is Ownable, VerifySignature {
     /*  
     ================================================================
                             State 
     ================================================================ 
     */
 
-    INFT public NFTContract;
-
     uint256 public unlockDelay = 0;
 
     uint256 public timeUntilUnlockExpires = 1 minutes;
 
-    mapping(uint256 => uint256) timeUntilSingleNFTUnlocked;
+    mapping(address => mapping(uint256 => uint256)) timeUntilSingleNFTUnlocked;
+
+    mapping(address => mapping(address => LockedERC721)) lockedERC721Addresses;
 
     uint256 public timeUntilAllUnlocked;
 
@@ -40,13 +39,7 @@ contract Vault is ERC721Enumerable, Ownable, VerifySignature {
     ================================================================ 
     */
 
-    constructor(address contractAddr, address _backupAddressForEmergency)
-        ERC721(
-            string(abi.encodePacked("locked", INFT(contractAddr).name())),
-            string(abi.encodePacked("locked", INFT(contractAddr).symbol()))
-        )
-    {
-        NFTContract = INFT(contractAddr);
+    constructor(address _backupAddressForEmergency) {
         backupAddressForEmergency = _backupAddressForEmergency;
     }
 
@@ -64,13 +57,13 @@ contract Vault is ERC721Enumerable, Ownable, VerifySignature {
         timeUntilAllUnlocked = block.timestamp + unlockDelay;
     }
 
-    function withdraw(uint256 tokenId)
+    function withdraw(uint256 tokenId, address ERC721Addr)
         public
         onlyOwner
-        checkIsUnlocked(tokenId)
+        checkIsUnlocked(tokenId, ERC721Addr)
     {
-        burnDummyNFT(tokenId);
-        NFTContract.safeTransferFrom(address(this), msg.sender, tokenId);
+        _burnLockedERC721(tokenId);
+        ERC721Addr.safeTransferFrom(address(this), msg.sender, tokenId);
     }
 
     function withdrawMultiple(uint256[] memory tokenId) external onlyOwner {
@@ -79,9 +72,13 @@ contract Vault is ERC721Enumerable, Ownable, VerifySignature {
         }
     }
 
-    function deposit(uint256 tokenId) external onlyOwner {
-        transferNFT(tokenId);
-        mintDummyNFT(tokenId);
+    function deposit(uint256 tokenId, address ERC721Addr)
+        external
+        onlyOwner
+        checkLockedERC721Exists(ERC721Addr)
+    {
+        transferERC721(tokenId, ERC721Addr);
+        _mintLockedERC721(tokenId);
     }
 
     /*  
@@ -89,13 +86,6 @@ contract Vault is ERC721Enumerable, Ownable, VerifySignature {
             Emergency Owner and Backup address Functions 
     ================================================================ 
     */
-
-    function withdrawAccidentalWrongNFTDeposit(
-        address NFTaddress,
-        uint256 tokenId
-    ) external onlyOwner {
-        INFT(NFTaddress).safeTransferFrom(address(this), msg.sender, tokenId);
-    }
 
     function acceptEmergencyInviteForBackupAddressToTakeControl(
         bytes memory signature
@@ -115,8 +105,8 @@ contract Vault is ERC721Enumerable, Ownable, VerifySignature {
     ================================================================ 
     */
 
-    modifier checkIsUnlocked(uint256 tokenId) {
-        if (!isTokenUnlocked(tokenId)) {
+    modifier checkIsUnlocked(uint256 tokenId, address ERC721Addr) {
+        if (!isTokenUnlocked(tokenId, ERC721Addr)) {
             require(isAllTokensUnlocked(), "Vault: Token is locked");
         }
         _;
@@ -139,42 +129,59 @@ contract Vault is ERC721Enumerable, Ownable, VerifySignature {
         _;
     }
 
+    modifier checkLockedERC721Exists(address ERC721Addr) {
+        address lockedERC721 = lockedERC721Addresses[msg.sender][ERC721Addr];
+        if (!lockedERC721) {
+            createLockedERC721(ERC721Addr);
+        }
+        _;
+    }
+
     /*  
     ================================================================
                             Internal Functions 
     ================================================================ 
     */
 
-    function isTokenUnlocked(uint256 tokenId) internal returns (bool) {
-        uint256 timeUnlocked = timeUntilSingleNFTUnlocked[tokenId];
-        uint256 timeUnlockExpires = timeUntilSingleNFTUnlocked[tokenId] +
-            timeUntilUnlockExpires;
+    function isTokenUnlocked(uint256 tokenId, address ERC721Addr)
+        internal
+        returns (bool)
+    {
+        uint256 timeUnlocked = timeUntilSingleNFTUnlocked[ERC721Addr][tokenId];
+        uint256 timeUnlockExpires = timeUnlocked + timeUntilUnlockExpires;
         return (block.timestamp >= timeUnlocked &&
             block.timestamp < timeUnlockExpires);
     }
 
     function isAllTokensUnlocked() internal returns (bool) {
         uint256 timeUnlocked = timeUntilAllUnlocked;
-        uint256 timeUnlockExpires = timeUntilAllUnlocked +
-            timeUntilUnlockExpires;
+        uint256 timeUnlockExpires = timeUnlocked + timeUntilUnlockExpires;
         return (block.timestamp >= timeUnlocked &&
             block.timestamp < timeUnlockExpires);
     }
 
-    function burnDummyNFT(uint256 tokenId) internal {
-        if (ownerOf(tokenId) == msg.sender) {
-            _burn(tokenId);
+    function _burnLockedERC721(uint256 tokenId, address ERC721Addr) internal {
+        if (LockedERC721(tokenId) == msg.sender) {
+            LockedERC721(ERC721Addr).burnLockedERC721(tokenId);
         }
     }
 
-    function mintDummyNFT(uint256 tokenId) internal {
-        _mint(msg.sender, tokenId);
+    function _mintLockedERC721(uint256 tokenId, address ERC721Addr) internal {
+        LockedERC721(ERC721Addr).mintLockedERC721(msg.sender, tokenId);
     }
 
-    function transferNFT(uint256 tokenId) internal {
-        if (NFTContract.ownerOf(tokenId) != address(this)) {
-            NFTContract.safeTransferFrom(msg.sender, address(this), tokenId);
+    function transferERC721(uint256 tokenId, address ERC721Addr) internal {
+        IERC721 ERC721 = IERC721(ERC721Addr);
+        if (ERC721.ownerOf(tokenId) != address(this)) {
+            ERC721.safeTransferFrom(msg.sender, address(this), tokenId);
         }
+    }
+
+    function createLockedERC721(address ERC721Address) internal {
+        LockedERC721 lockedERC721 = new LockedERC721(ERC721Address);
+        lockedERC721Addresses[msg.sender][ERC721Address] = address(
+            lockedERC721
+        );
     }
 
     /*  
@@ -183,13 +190,13 @@ contract Vault is ERC721Enumerable, Ownable, VerifySignature {
     ================================================================ 
     */
 
-    function tokenURI(uint256 tokenId)
+    function tokenURI(uint256 tokenId, address ERC721Addr)
         public
         view
         override
         returns (string memory)
     {
-        return NFTContract.tokenURI(tokenId);
+        return IERC721(ERC721Addr).tokenURI(tokenId);
     }
 
     function onERC721Received(

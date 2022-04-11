@@ -1,6 +1,6 @@
 pragma solidity ^0.8.0;
 
-interface INFT {
+interface IERC721 {
     /**
      * @dev Emitted when `tokenId` token is transferred from `from` to `to`.
      */

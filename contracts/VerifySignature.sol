@@ -47,8 +47,8 @@ contract VerifySignature {
         address _to,
         string memory _message,
         bytes memory signature
-    ) public pure returns (bool) {
-        uint256 chainId = getChainID();
+    ) public view returns (bool) {
+        uint256 chainId = block.chainid;
         bytes32 messageHash = getMessageHash(_to, _message, chainId);
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
 
@@ -94,13 +94,5 @@ contract VerifySignature {
         }
 
         // implicitly return (r, s, v)
-    }
-
-    function getChainID() public view returns (uint256) {
-        uint256 id;
-        assembly {
-            id := chainid()
-        }
-        return id;
     }
 }
