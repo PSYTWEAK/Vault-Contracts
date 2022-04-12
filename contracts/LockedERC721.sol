@@ -17,11 +17,11 @@ contract LockedERC721 is ERC721Enumerable, Ownable {
 
     function transferOwnership(address owner) public override onlyOwner {}
 
-    function burnLockedERC721(uint256 tokenId) external onlyOwner {
+    function _burnLockedERC721(uint256 tokenId) external onlyOwner {
         _burn(tokenId);
     }
 
-    function mintLockedERC721(uint256 tokenId) external onlyOwner {
+    function _mintLockedERC721(uint256 tokenId) external onlyOwner {
         _mint(msg.sender, tokenId);
     }
 
