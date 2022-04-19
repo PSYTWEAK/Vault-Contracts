@@ -27,35 +27,56 @@ contract Vault is VaultInternal {
     ================================================================ 
     */
 
-    function deposit(uint256 tokenId, address ERC721Addr)
+    function deposit(address unlockedERC721, uint256 tokenId)
         external
         onlyOwner
-        checkLockedERC721Exists(ERC721Addr)
+        checkLockedERC721Exists(unlockedERC721)
     {
-        transferERC721(tokenId, ERC721Addr);
-        mintLockedERC721(tokenId);
+        transferERC721(unlockedERC721, tokenId);
+        mintLockedERC721(unlockedERC721, tokenId);
     }
 
-    function unlock(uint256 tokenId) external onlyOwner {
-        timeUntilSingleNFTUnlocked[tokenId] = block.timestamp + unlockDelay;
+    function unlock(address unlockedERC721, uint256 tokenId)
+        external
+        onlyOwner
+    {
+        timestampForSingleNFTUnlocked[unlockedERC721][tokenId] =
+            block.timestamp +
+            unlockDelay;
     }
 
     function unlockAll() external onlyOwner {
-        timeUntilAllUnlocked = block.timestamp + unlockDelay;
+        timestampForAllNFTsUnlocked = block.timestamp + unlockDelay;
     }
 
-    function withdraw(uint256 tokenId, address ERC721Addr)
+    function withdraw(address unlockedERC721, uint256 tokenId)
         public
         onlyOwner
-        checkIsUnlocked(tokenId, ERC721Addr)
+        checkIsUnlocked(unlockedERC721, tokenId)
     {
-        burnLockedERC721(tokenId);
-        ERC721Addr.safeTransferFrom(address(this), msg.sender, tokenId);
+        burnLockedERC721(unlockedERC721, tokenId);
+        IUnlockedERC721(unlockedERC721).safeTransferFrom(
+            address(this),
+            msg.sender,
+            tokenId
+        );
     }
 
-    function withdrawMultiple(uint256[] memory tokenId) external onlyOwner {
-        for (uint256 i; i < tokenId.length; i++) {
-            withdraw(tokenId[i]);
+    function withdrawMultipleOfCollection(
+        address unlockedERC721,
+        uint256[] memory tokenIds
+    ) public onlyOwner {
+        for (uint256 i; i < tokenIds.length; i++) {
+            withdraw(unlockedERC721, tokenIds[i]);
+        }
+    }
+
+    function withdrawMultiple(
+        address[] memory unlockedERC721s,
+        uint256[][] memory tokenIds
+    ) external onlyOwner {
+        for (uint256 i; i < unlockedERC721s.length; i++) {
+            withdrawMultipleOfCollection(unlockedERC721s[i], tokenIds[i]);
         }
     }
 

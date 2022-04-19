@@ -1,6 +1,6 @@
 pragma solidity ^0.8.0;
 
-interface IERC721 {
+interface IUnlockedERC721 {
     /**
      * @dev Emitted when `tokenId` token is transferred from `from` to `to`.
      */

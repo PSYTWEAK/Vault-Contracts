@@ -3,8 +3,7 @@ pragma solidity ^0.8.0;
 import "./Vault.sol";
 
 contract VaultFactory {
-    mapping(address => mapping(uint256 => Vault)) vaults;
-    mapping(address => uint256) vaultCount;
+    mapping(address => Vault) vaults;
 
     function createVault(address backupAddressForEmergency) public {
         Vault vault = new Vault(backupAddressForEmergency);
@@ -13,15 +12,10 @@ contract VaultFactory {
     }
 
     function storeVault(Vault vault) internal {
-        vaultCount[msg.sender]++;
-        vaults[msg.sender][vaultCount[msg.sender]] = vault;
+        vaults[msg.sender] = vault;
     }
 
-    function getVault(address account, address NFTContractAddress)
-        public
-        view
-        returns (address)
-    {
-        return address(vaults[account][NFTContractAddress]);
+    function getVault(address account) public view returns (address) {
+        return address(vaults[account]);
     }
 }

@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./Library/VerifySignature.sol";
 import "./LockedERC721.sol";
+import "./Library/IUnlockedERC721.sol";
 
 contract VaultInternal is VerifySignature, Ownable {
     /*  
@@ -15,11 +16,11 @@ contract VaultInternal is VerifySignature, Ownable {
 
     uint256 public timeUntilUnlockExpires = 1 minutes;
 
-    mapping(address => mapping(uint256 => uint256)) timeUntilSingleNFTUnlocked;
+    mapping(address => bool) lockedERC721Exists;
 
-    mapping(address => mapping(address => LockedERC721)) lockedERC721Addresses;
+    mapping(address => mapping(uint256 => uint256)) timestampForSingleNFTUnlocked;
 
-    uint256 public timeUntilAllUnlocked;
+    uint256 public timestampForAllNFTsUnlocked;
 
     address public backupAddressForEmergency;
 
@@ -31,8 +32,8 @@ contract VaultInternal is VerifySignature, Ownable {
     ================================================================ 
     */
 
-    modifier checkIsUnlocked(uint256 tokenId, address ERC721Addr) {
-        if (!isTokenUnlocked(tokenId, ERC721Addr)) {
+    modifier checkIsUnlocked(address unlockedERC721, uint256 tokenId) {
+        if (!isTokenUnlocked(unlockedERC721, tokenId)) {
             require(isAllTokensUnlocked(), "Vault: Token is locked");
         }
         _;
@@ -55,10 +56,9 @@ contract VaultInternal is VerifySignature, Ownable {
         _;
     }
 
-    modifier checkLockedERC721Exists(address ERC721Addr) {
-        address lockedERC721 = lockedERC721Addresses[msg.sender][ERC721Addr];
-        if (!lockedERC721) {
-            createLockedERC721(ERC721Addr);
+    modifier checkLockedERC721Exists(address unlockedERC721) {
+        if (!lockedERC721Exists[unlockedERC721]) {
+            createLockedERC721(unlockedERC721);
         }
         _;
     }
@@ -69,44 +69,48 @@ contract VaultInternal is VerifySignature, Ownable {
     ================================================================ 
     */
 
-    function isTokenUnlocked(uint256 tokenId, address ERC721Addr)
+    function isTokenUnlocked(address unlockedERC721, uint256 tokenId)
         internal
         returns (bool)
     {
-        uint256 timeUnlocked = timeUntilSingleNFTUnlocked[ERC721Addr][tokenId];
+        uint256 timeUnlocked = timestampForSingleNFTUnlocked[unlockedERC721][
+            tokenId
+        ];
         uint256 timeUnlockExpires = timeUnlocked + timeUntilUnlockExpires;
         return (block.timestamp >= timeUnlocked &&
             block.timestamp < timeUnlockExpires);
     }
 
     function isAllTokensUnlocked() internal returns (bool) {
-        uint256 timeUnlocked = timeUntilAllUnlocked;
+        uint256 timeUnlocked = timestampForAllNFTsUnlocked;
         uint256 timeUnlockExpires = timeUnlocked + timeUntilUnlockExpires;
         return (block.timestamp >= timeUnlocked &&
             block.timestamp < timeUnlockExpires);
     }
 
-    function burnLockedERC721(uint256 tokenId, address ERC721Addr) internal {
-        if (LockedERC721(ERC721Addr).exists(tokenId) == msg.sender) {
-            LockedERC721(ERC721Addr)._burnLockedERC721(tokenId);
+    function burnLockedERC721(address unlockedERC721, uint256 tokenId)
+        internal
+    {
+        if (LockedERC721(unlockedERC721).exists(tokenId)) {
+            LockedERC721(unlockedERC721)._burnLockedERC721(tokenId);
         }
     }
 
-    function mintLockedERC721(uint256 tokenId, address ERC721Addr) internal {
-        LockedERC721(ERC721Addr)._mintLockedERC721(msg.sender, tokenId);
+    function mintLockedERC721(address unlockedERC721, uint256 tokenId)
+        internal
+    {
+        LockedERC721(unlockedERC721)._mintLockedERC721(msg.sender, tokenId);
     }
 
-    function transferERC721(uint256 tokenId, address ERC721Addr) internal {
-        IERC721 ERC721 = IERC721(ERC721Addr);
-        if (ERC721.ownerOf(tokenId) != address(this)) {
-            ERC721.safeTransferFrom(msg.sender, address(this), tokenId);
+    function transferERC721(address unlockedERC721, uint256 tokenId) internal {
+        IUnlockedERC721 unlockedERC721 = IUnlockedERC721(unlockedERC721);
+        if (unlockedERC721.ownerOf(tokenId) != address(this)) {
+            unlockedERC721.safeTransferFrom(msg.sender, address(this), tokenId);
         }
     }
 
-    function createLockedERC721(address ERC721Address) internal {
-        LockedERC721 lockedERC721 = new LockedERC721(ERC721Address);
-        lockedERC721Addresses[msg.sender][ERC721Address] = address(
-            lockedERC721
-        );
+    function createLockedERC721(address unlockedERC721) internal {
+        new LockedERC721(unlockedERC721);
+        lockedERC721Exists[unlockedERC721] = true;
     }
 }
