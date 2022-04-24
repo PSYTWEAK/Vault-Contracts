@@ -18,12 +18,9 @@ describe("Factory", function () {
   });
   it("Should create vault", async function () {
     let [owner] = await ethers.getSigners();
-    await vaultfactory.createVault(testNFT.address, owner.address);
+    await vaultfactory.createVault(owner.address);
 
-    const vaultAddr = await vaultfactory.getVault(
-      owner.address,
-      testNFT.address
-    );
+    const vaultAddr = await vaultfactory.getVault(owner.address);
 
     const Vault = await hre.ethers.getContractFactory("Vault");
     vault = await Vault.attach(vaultAddr);
@@ -33,17 +30,17 @@ describe("Factory", function () {
     await testNFT.setApprovalForAll(vault.address, true);
   });
   it("Should deposit to vaults", async function () {
-    await vault.deposit(1);
-    await vault.deposit(2);
-    await vault.deposit(3);
+    await vault.deposit(testNFT.address, 1);
+    await vault.deposit(testNFT.address, 2);
+    await vault.deposit(testNFT.address, 3);
   });
   it("Should unlock 1 nft", async function () {
-    await vault.unlock(1);
+    await vault.unlock(testNFT.address, 1);
   });
   it("Should withdraw token 1 from vault", async function () {
     /*     await network.provider.send("evm_setNextBlockTimestamp", [162509760000]);
     await network.provider.send("evm_mine"); */
-    await vault.withdraw(1);
+    await vault.withdraw(testNFT.address, 1);
   });
   it("Should unlock all nfts", async function () {
     await vault.unlockAll();

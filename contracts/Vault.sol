@@ -4,10 +4,19 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "./VaultInternal.sol";
 
 /* 
-Yb    dP    db    88   88 88     888888 
- Yb  dP    dPYb   88   88 88       88   
-  YbdP    dP__Yb  Y8   8P 88  .o   88   
-   YP    dP""""Yb `YbodP' 88ood8   88  
+$$\    $$\                    $$\   $$\     
+$$ |   $$ |                   $$ |  $$ |    
+$$ |   $$ |$$$$$$\  $$\   $$\ $$ |$$$$$$\   
+\$$\  $$  |\____$$\ $$ |  $$ |$$ |\_$$  _|  
+ \$$\$$  / $$$$$$$ |$$ |  $$ |$$ |  $$ |    
+  \$$$  / $$  __$$ |$$ |  $$ |$$ |  $$ |$$\ 
+   \$  /  \$$$$$$$ |\$$$$$$  |$$ |  \$$$$  |
+    \_/    \_______| \______/ \__|   \____/ 
+    ___               _   ___      _   _           
+   /   \___  __ _  __| | / __\   _| |_(_) ___  ___ 
+  / /\ / _ \/ _` |/ _` |/ / | | | | __| |/ _ \/ __|
+ / /_//  __/ (_| | (_| / /__| |_| | |_| |  __/\__ \
+/___,' \___|\__,_|\__,_\____/\__,_|\__|_|\___||___/
 */
 
 contract Vault is VaultInternal {
@@ -33,7 +42,7 @@ contract Vault is VaultInternal {
         checkLockedERC721Exists(unlockedERC721)
     {
         transferERC721(unlockedERC721, tokenId);
-        mintLockedERC721(unlockedERC721, tokenId);
+        mintLockedToken(unlockedERC721, tokenId);
     }
 
     function unlock(address unlockedERC721, uint256 tokenId)
@@ -54,7 +63,7 @@ contract Vault is VaultInternal {
         onlyOwner
         checkIsUnlocked(unlockedERC721, tokenId)
     {
-        burnLockedERC721(unlockedERC721, tokenId);
+        burnLockedToken(unlockedERC721, tokenId);
         IUnlockedERC721(unlockedERC721).safeTransferFrom(
             address(this),
             msg.sender,

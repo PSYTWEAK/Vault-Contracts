@@ -5,6 +5,22 @@ import "./Library/VerifySignature.sol";
 import "./LockedERC721.sol";
 import "./Library/IUnlockedERC721.sol";
 
+/* 
+$$\    $$\                    $$\   $$\     $$$$$$\            $$\                                             $$\ 
+$$ |   $$ |                   $$ |  $$ |    \_$$  _|           $$ |                                            $$ |
+$$ |   $$ |$$$$$$\  $$\   $$\ $$ |$$$$$$\     $$ |  $$$$$$$\ $$$$$$\    $$$$$$\   $$$$$$\  $$$$$$$\   $$$$$$\  $$ |
+\$$\  $$  |\____$$\ $$ |  $$ |$$ |\_$$  _|    $$ |  $$  __$$\\_$$  _|  $$  __$$\ $$  __$$\ $$  __$$\  \____$$\ $$ |
+ \$$\$$  / $$$$$$$ |$$ |  $$ |$$ |  $$ |      $$ |  $$ |  $$ | $$ |    $$$$$$$$ |$$ |  \__|$$ |  $$ | $$$$$$$ |$$ |
+  \$$$  / $$  __$$ |$$ |  $$ |$$ |  $$ |$$\   $$ |  $$ |  $$ | $$ |$$\ $$   ____|$$ |      $$ |  $$ |$$  __$$ |$$ |
+   \$  /  \$$$$$$$ |\$$$$$$  |$$ |  \$$$$  |$$$$$$\ $$ |  $$ | \$$$$  |\$$$$$$$\ $$ |      $$ |  $$ |\$$$$$$$ |$$ |
+    \_/    \_______| \______/ \__|   \____/ \______|\__|  \__|  \____/  \_______|\__|      \__|  \__| \_______|\__|
+    ___               _   ___      _   _           
+   /   \___  __ _  __| | / __\   _| |_(_) ___  ___ 
+  / /\ / _ \/ _` |/ _` |/ / | | | | __| |/ _ \/ __|
+ / /_//  __/ (_| | (_| / /__| |_| | |_| |  __/\__ \
+/___,' \___|\__,_|\__,_\____/\__,_|\__|_|\___||___/
+*/
+
 contract VaultInternal is VerifySignature, Ownable {
     /*  
     ================================================================
@@ -12,11 +28,11 @@ contract VaultInternal is VerifySignature, Ownable {
     ================================================================ 
     */
 
-    uint256 public unlockDelay = 0;
+    uint256 immutable unlockDelay = 0;
 
-    uint256 public timeUntilUnlockExpires = 1 minutes;
+    uint256 immutable timeUntilUnlockExpires = 1 minutes;
 
-    mapping(address => bool) lockedERC721Exists;
+    mapping(address => address) lockedERC721Address;
 
     mapping(address => mapping(uint256 => uint256)) timestampForSingleNFTUnlocked;
 
@@ -57,7 +73,7 @@ contract VaultInternal is VerifySignature, Ownable {
     }
 
     modifier checkLockedERC721Exists(address unlockedERC721) {
-        if (!lockedERC721Exists[unlockedERC721]) {
+        if (lockedERC721Address[unlockedERC721] == address(0)) {
             createLockedERC721(unlockedERC721);
         }
         _;
@@ -66,6 +82,34 @@ contract VaultInternal is VerifySignature, Ownable {
     /*  
     ================================================================
                             Internal Functions 
+    ================================================================ 
+    */
+
+    function transferERC721(address unlockedERC721, uint256 tokenId) internal {
+        IUnlockedERC721 unlockedERC721 = IUnlockedERC721(unlockedERC721);
+        if (unlockedERC721.ownerOf(tokenId) != address(this)) {
+            unlockedERC721.safeTransferFrom(msg.sender, address(this), tokenId);
+        }
+    }
+
+    function createLockedERC721(address unlockedERC721) internal {
+        LockedERC721 lockedERC721 = new LockedERC721(unlockedERC721);
+        lockedERC721Address[unlockedERC721] = address(lockedERC721);
+    }
+
+    function mintLockedToken(address unlockedERC721, uint256 tokenId) internal {
+        address lockedERC721 = lockedERC721Address[unlockedERC721];
+        LockedERC721(lockedERC721)._mintLockedERC721(msg.sender, tokenId);
+    }
+
+    function burnLockedToken(address unlockedERC721, uint256 tokenId) internal {
+        address lockedERC721 = lockedERC721Address[unlockedERC721];
+        LockedERC721(lockedERC721)._burnLockedERC721(tokenId);
+    }
+
+    /*  
+    ================================================================
+                        Internal returns 
     ================================================================ 
     */
 
@@ -86,31 +130,5 @@ contract VaultInternal is VerifySignature, Ownable {
         uint256 timeUnlockExpires = timeUnlocked + timeUntilUnlockExpires;
         return (block.timestamp >= timeUnlocked &&
             block.timestamp < timeUnlockExpires);
-    }
-
-    function burnLockedERC721(address unlockedERC721, uint256 tokenId)
-        internal
-    {
-        if (LockedERC721(unlockedERC721).exists(tokenId)) {
-            LockedERC721(unlockedERC721)._burnLockedERC721(tokenId);
-        }
-    }
-
-    function mintLockedERC721(address unlockedERC721, uint256 tokenId)
-        internal
-    {
-        LockedERC721(unlockedERC721)._mintLockedERC721(msg.sender, tokenId);
-    }
-
-    function transferERC721(address unlockedERC721, uint256 tokenId) internal {
-        IUnlockedERC721 unlockedERC721 = IUnlockedERC721(unlockedERC721);
-        if (unlockedERC721.ownerOf(tokenId) != address(this)) {
-            unlockedERC721.safeTransferFrom(msg.sender, address(this), tokenId);
-        }
-    }
-
-    function createLockedERC721(address unlockedERC721) internal {
-        new LockedERC721(unlockedERC721);
-        lockedERC721Exists[unlockedERC721] = true;
     }
 }
