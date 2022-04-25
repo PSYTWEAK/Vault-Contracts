@@ -37,12 +37,30 @@ contract Vault is VaultInternal {
     */
 
     function deposit(address unlockedERC721, uint256 tokenId)
-        external
+        public
         onlyOwner
         checkLockedERC721Exists(unlockedERC721)
     {
         transferERC721(unlockedERC721, tokenId);
         mintLockedToken(unlockedERC721, tokenId);
+    }
+
+    function depositMutipleOfCollection(
+        address unlockedERC721,
+        uint256[] memory tokenIds
+    ) public onlyOwner {
+        for (uint256 i; i < tokenIds.length; i++) {
+            deposit(unlockedERC721, tokenIds[i]);
+        }
+    }
+
+    function depositMutiple(
+        address[] memory unlockedERC721s,
+        uint256[][] memory tokenIds
+    ) external onlyOwner {
+        for (uint256 i; i < unlockedERC721s.length; i++) {
+            depositMutipleOfCollection(unlockedERC721s[i], tokenIds[i]);
+        }
     }
 
     function unlock(address unlockedERC721, uint256 tokenId)
@@ -112,6 +130,17 @@ contract Vault is VaultInternal {
                         Public View Functions 
     ================================================================ 
     */
+
+    function getTimestampForSingleNFTUnlocked(
+        address unlockedERC721,
+        uint256 tokenId
+    ) public view returns (uint256) {
+        return timestampForSingleNFTUnlocked[unlockedERC721][tokenId];
+    }
+
+    function getTimestampForAllNFTsUnlocked() public view returns (uint256) {
+        return timestampForAllNFTsUnlocked;
+    }
 
     function onERC721Received(
         address,
