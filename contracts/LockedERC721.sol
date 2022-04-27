@@ -61,6 +61,6 @@ contract LockedERC721 is ERC721Enumerable, Ownable {
         override
         returns (string memory)
     {
-        return ERC721.tokenURI(tokenId);
+        return unlockedERC721.tokenURI(tokenId);
     }
 }

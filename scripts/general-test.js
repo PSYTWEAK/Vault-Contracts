@@ -1,7 +1,7 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("Factory", function () {
+/* describe("Factory", function () {
   let vaultfactory, testNFT, vault;
   it("Test deploying the vaultfactory contract", async function () {
     const Vaultfactory = await hre.ethers.getContractFactory("VaultFactory");
@@ -88,7 +88,7 @@ describe("Factory", function () {
       1
     );
 
-    expect(unlockTimestamp).to.greaterThan(0); */
+    expect(unlockTimestamp).to.greaterThan(0); 
   });
   it("Test withdraw token id 1", async function () {
     let [owner] = await ethers.getSigners();
@@ -116,9 +116,9 @@ describe("Factory", function () {
   it("Test unlock all NFTs", async function () {
     await vault.unlockAll();
 
-    /*     let unlockTimestamp = await vault.getTimestampForAllNFTsUnlocked();
+        let unlockTimestamp = await vault.getTimestampForAllNFTsUnlocked();
 
-    expect(unlockTimestamp).to.greaterThan(0); */
+    expect(unlockTimestamp).to.greaterThan(0); 
   });
   it("Test withdraw mutiple tokens 2 & 3 from vault in same tx", async function () {
     let [owner] = await ethers.getSigners();
@@ -130,3 +130,4 @@ describe("Factory", function () {
     expect(balance).to.equal(10);
   });
 });
+ */

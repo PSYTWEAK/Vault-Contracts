@@ -2,9 +2,8 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract TestNFT is ERC721Enumerable, Ownable {
+contract TestNFT is ERC721Enumerable {
     /*  
     ================================================================
                             State 
@@ -15,7 +14,7 @@ contract TestNFT is ERC721Enumerable, Ownable {
 
     uint256 internal _totalSupply;
 
-    constructor() ERC721("DeadCuties", "DEAD") {}
+    constructor() ERC721("BoredApe", "APE") {}
 
     /*  
     ================================================================
@@ -23,7 +22,7 @@ contract TestNFT is ERC721Enumerable, Ownable {
     ================================================================ 
     */
 
-    function mint(uint256 amount) external payable {
+    function mint(uint256 amount) public payable {
         for (uint256 i = 0; i < amount; i++) {
             mintNFT();
         }
