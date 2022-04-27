@@ -28,15 +28,15 @@ contract VaultInternal is VerifySignature, Ownable {
     ================================================================ 
     */
 
-    uint256 immutable unlockDelay = 0;
+    uint256 immutable unlockDelay = 24;
 
-    uint256 immutable timeUntilUnlockExpires = 1 minutes;
-
-    mapping(address => address) lockedERC721Address;
+    uint256 immutable timeUntilUnlockExpires = 2 hours;
 
     mapping(address => mapping(uint256 => uint256)) timestampForSingleNFTUnlocked;
 
     uint256 public timestampForAllNFTsUnlocked;
+
+    mapping(address => address) lockedERC721Address;
 
     address public backupAddressForEmergency;
 
