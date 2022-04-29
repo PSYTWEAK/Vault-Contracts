@@ -32,9 +32,11 @@ contract Vault is VaultInternal {
 
     /*  
     ================================================================
-                    External Functions 
+                        Public Functions 
     ================================================================ 
     */
+
+    //========================= Deposit ==============================
 
     function deposit(address unlockedERC721, uint256 tokenId)
         public
@@ -57,24 +59,25 @@ contract Vault is VaultInternal {
     function depositMutiple(
         address[] memory unlockedERC721s,
         uint256[][] memory tokenIds
-    ) external onlyOwner {
+    ) public onlyOwner {
         for (uint256 i; i < unlockedERC721s.length; i++) {
             depositMutipleOfCollection(unlockedERC721s[i], tokenIds[i]);
         }
     }
 
-    function unlock(address unlockedERC721, uint256 tokenId)
-        external
-        onlyOwner
-    {
+    //========================= Unlock ==============================
+
+    function unlock(address unlockedERC721, uint256 tokenId) public onlyOwner {
         timestampForSingleNFTUnlocked[unlockedERC721][tokenId] =
             block.timestamp +
             unlockDelay;
     }
 
-    function unlockAll() external onlyOwner {
+    function unlockAll() public onlyOwner {
         timestampForAllNFTsUnlocked = block.timestamp + unlockDelay;
     }
+
+    //========================= Withdraw ==============================
 
     function withdraw(address unlockedERC721, uint256 tokenId)
         public
@@ -101,23 +104,21 @@ contract Vault is VaultInternal {
     function withdrawMultiple(
         address[] memory unlockedERC721s,
         uint256[][] memory tokenIds
-    ) external onlyOwner {
+    ) public onlyOwner {
         for (uint256 i; i < unlockedERC721s.length; i++) {
             withdrawMultipleOfCollection(unlockedERC721s[i], tokenIds[i]);
         }
     }
 
-    /*  
-    ================================================================
-                Emergency Backup address Functions 
-    ================================================================ 
-    */
+    //====================== Emergency ==============================
 
     function acceptEmergencyInviteForBackupAddressToTakeControl(
         bytes memory signature
     ) external onlyBackupAddress checkValidSignature(signature) {
         _transferOwnership(backupAddressForEmergency);
     }
+
+    //====================== initializing ==============================
 
     function transferOwnership(address owner) public override onlyOwner {
         require(!hasOwner, "Vault: Owner already set on creation");

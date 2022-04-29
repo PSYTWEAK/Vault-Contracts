@@ -5,6 +5,8 @@ import "./Library/VerifySignature.sol";
 import "./LockedERC721.sol";
 import "./Library/IUnlockedERC721.sol";
 
+import "hardhat/console.sol";
+
 /* 
 $$\    $$\                    $$\   $$\     $$$$$$\            $$\                                             $$\ 
 $$ |   $$ |                   $$ |  $$ |    \_$$  _|           $$ |                                            $$ |
@@ -28,7 +30,7 @@ contract VaultInternal is VerifySignature, Ownable {
     ================================================================ 
     */
 
-    uint256 immutable unlockDelay = 24;
+    uint256 immutable unlockDelay = 24 hours;
 
     uint256 immutable timeUntilUnlockExpires = 2 hours;
 
@@ -121,6 +123,7 @@ contract VaultInternal is VerifySignature, Ownable {
             tokenId
         ];
         uint256 timeUnlockExpires = timeUnlocked + timeUntilUnlockExpires;
+
         return (block.timestamp >= timeUnlocked &&
             block.timestamp < timeUnlockExpires);
     }
@@ -128,6 +131,7 @@ contract VaultInternal is VerifySignature, Ownable {
     function isAllTokensUnlocked() internal returns (bool) {
         uint256 timeUnlocked = timestampForAllNFTsUnlocked;
         uint256 timeUnlockExpires = timeUnlocked + timeUntilUnlockExpires;
+
         return (block.timestamp >= timeUnlocked &&
             block.timestamp < timeUnlockExpires);
     }

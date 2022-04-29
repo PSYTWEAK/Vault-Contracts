@@ -73,6 +73,7 @@ const unlockAll_test = () => {
       expect(balance).to.equal(requiredNumberOfUnlockedNFTs);
     });
     it("Deposit 3 more", async function () {
+      let [owner] = await ethers.getSigners();
       await vault.deposit(testNFT.address, 4);
 
       await vault.deposit(testNFT.address, 5);
@@ -110,6 +111,10 @@ const unlockAll_test = () => {
       expect(hasFailed).to.equal(true);
 
       expect(balance).to.equal(requiredNumberOfUnlockedNFTs);
+    });
+    it("Wait unlockDelay amount of time", async function () {
+      await network.provider.send("evm_increaseTime", [unlockData.unlockDelay]);
+      await network.provider.send("evm_mine");
     });
     it("Withdraw all", async function () {
       let [owner] = await ethers.getSigners();

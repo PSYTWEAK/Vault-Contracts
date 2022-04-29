@@ -10,9 +10,9 @@ const {
 } = require(`./withdrawMultipleOfCollection_test.js`);
 
 describe("Unit Tests", function () {
-  withdraw_test();
+  /*   withdraw_test();
   deposit_test();
-  withdrawMultipleOfCollection_test();
+  withdrawMultipleOfCollection_test(); */
   unlock_test();
   unlockAll_test();
 });
