@@ -1,5 +1,6 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
+const { unlockData } = require(`./unlock_data.js`);
 
 const withdraw_test = () => {
   describe("Testing Withdraw()", function () {
@@ -70,6 +71,10 @@ const withdraw_test = () => {
     it("Unlock token id 1", async function () {
       await vault.unlock(testNFT.address, 1);
     });
+    it("Wait unlockDelay amount of time", async function () {
+      await network.provider.send("evm_increaseTime", [unlockData.unlockDelay]);
+      await network.provider.send("evm_mine");
+    });
     it("Withdraw token id 1", async function () {
       let [owner] = await ethers.getSigners();
 
@@ -100,6 +105,10 @@ const withdraw_test = () => {
     });
     it("Unlock all NFTs", async function () {
       await vault.unlockAll();
+    });
+    it("Wait unlockDelay amount of time", async function () {
+      await network.provider.send("evm_increaseTime", [unlockData.unlockDelay]);
+      await network.provider.send("evm_mine");
     });
     it("Withdraw token id 2", async function () {
       let [owner] = await ethers.getSigners();

@@ -36,7 +36,7 @@ contract Vault is VaultInternal {
     ================================================================ 
     */
 
-    //========================= Deposit ==============================
+    //========================= Deposits ==============================
 
     function deposit(address unlockedERC721, uint256 tokenId)
         public
@@ -65,7 +65,7 @@ contract Vault is VaultInternal {
         }
     }
 
-    //========================= Unlock ==============================
+    //========================= Unlocks ==============================
 
     function unlock(address unlockedERC721, uint256 tokenId) public onlyOwner {
         timestampForSingleNFTUnlocked[unlockedERC721][tokenId] =
@@ -77,7 +77,17 @@ contract Vault is VaultInternal {
         timestampForAllNFTsUnlocked = block.timestamp + unlockDelay;
     }
 
-    //========================= Withdraw ==============================
+    //========================= Unlocks ==============================
+
+    function lock(address unlockedERC721, uint256 tokenId) public onlyOwner {
+        timestampForSingleNFTUnlocked[unlockedERC721][tokenId] = 0;
+    }
+
+    function lockAll() public onlyOwner {
+        timestampForAllNFTsUnlocked = 0;
+    }
+
+    //========================= Withdraws ==============================
 
     function withdraw(address unlockedERC721, uint256 tokenId)
         public

@@ -1,5 +1,6 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
+const { unlockData } = require(`./unlock_data.js`);
 
 const deposit_test = () => {
   describe("Testing Deposit()", function () {
