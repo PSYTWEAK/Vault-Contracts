@@ -4,7 +4,7 @@ const { ethers } = require("hardhat");
 const { unlockData } = require(`./unlock_data.js`);
 
 const lock_test = () => {
-  describe("Testing unlock()", function () {
+  describe("Testing lock()", function () {
     let vaultfactory, testNFT, vault;
 
     let requiredNumberOfUnlockedNFTs = 10;

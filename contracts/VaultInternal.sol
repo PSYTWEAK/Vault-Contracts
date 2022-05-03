@@ -34,11 +34,11 @@ contract VaultInternal is VerifySignature, Ownable {
 
     uint256 immutable timeUntilUnlockExpires = 2 hours;
 
-    uint256 private massResetSingleNFTUnlockCounter;
+    uint256 public currentUnlockedTimestampVersion;
 
-    mapping(uint256 => mapping(address => mapping(uint256 => uint256))) timestampForSingleNFTUnlocked;
+    mapping(uint256 => mapping(address => mapping(uint256 => uint256))) whenSingleERC721Unlocked;
 
-    uint256 public timestampForAllNFTsUnlocked;
+    uint256 public whenAllERC721Unlocked;
 
     mapping(address => address) lockedERC721Address;
 
@@ -111,6 +111,10 @@ contract VaultInternal is VerifySignature, Ownable {
         LockedERC721(lockedERC721)._burnLockedERC721(tokenId);
     }
 
+    function resetAllSingleERC721Timestamps() internal {
+        currentUnlockedTimestampVersion++;
+    }
+
     /*  
     ================================================================
                         Internal returns 
@@ -121,9 +125,9 @@ contract VaultInternal is VerifySignature, Ownable {
         internal
         returns (bool)
     {
-        uint256 timeUnlocked = timestampForSingleNFTUnlocked[unlockedERC721][
-            tokenId
-        ];
+        uint256 timeUnlocked = whenSingleERC721Unlocked[
+            currentUnlockedTimestampVersion
+        ][unlockedERC721][tokenId];
         uint256 timeUnlockExpires = timeUnlocked + timeUntilUnlockExpires;
 
         return (block.timestamp >= timeUnlocked &&
@@ -131,7 +135,7 @@ contract VaultInternal is VerifySignature, Ownable {
     }
 
     function isAllTokensUnlocked() internal returns (bool) {
-        uint256 timeUnlocked = timestampForAllNFTsUnlocked;
+        uint256 timeUnlocked = whenAllERC721Unlocked;
         uint256 timeUnlockExpires = timeUnlocked + timeUntilUnlockExpires;
 
         return (block.timestamp >= timeUnlocked &&

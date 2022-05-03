@@ -68,24 +68,26 @@ contract Vault is VaultInternal {
     //========================= Unlocks ==============================
 
     function unlock(address unlockedERC721, uint256 tokenId) public onlyOwner {
-        timestampForSingleNFTUnlocked[massResetSingleNFTUnlockCounter][
+        whenSingleERC721Unlocked[currentUnlockedTimestampVersion][
             unlockedERC721
         ][tokenId] = block.timestamp + unlockDelay;
     }
 
     function unlockAll() public onlyOwner {
-        timestampForAllNFTsUnlocked = block.timestamp + unlockDelay;
+        whenAllERC721Unlocked = block.timestamp + unlockDelay;
     }
 
     //========================= locks ==============================
 
     function lock(address unlockedERC721, uint256 tokenId) public onlyOwner {
-        timestampForSingleNFTUnlocked[unlockedERC721][tokenId] = 0;
+        whenSingleERC721Unlocked[currentUnlockedTimestampVersion][
+            unlockedERC721
+        ][tokenId] = 0;
     }
 
     function lockAll() public onlyOwner {
-        timestampForAllNFTsUnlocked = 0;
-        massResetSingleNFTUnlockCounter++;
+        whenAllERC721Unlocked = 0;
+        resetAllSingleERC721Timestamps();
     }
 
     //========================= Withdraws ==============================
@@ -143,15 +145,19 @@ contract Vault is VaultInternal {
     ================================================================ 
     */
 
-    function getTimestampForSingleNFTUnlocked(
-        address unlockedERC721,
-        uint256 tokenId
-    ) public view returns (uint256) {
-        return timestampForSingleNFTUnlocked[unlockedERC721][tokenId];
+    function getWhenSingleERC721Unlock(address unlockedERC721, uint256 tokenId)
+        public
+        view
+        returns (uint256)
+    {
+        return
+            whenSingleERC721Unlocked[currentUnlockedTimestampVersion][
+                unlockedERC721
+            ][tokenId];
     }
 
-    function getTimestampForAllNFTsUnlocked() public view returns (uint256) {
-        return timestampForAllNFTsUnlocked;
+    function getWhenAllERC721Unlock() public view returns (uint256) {
+        return whenAllERC721Unlocked;
     }
 
     function onERC721Received(
