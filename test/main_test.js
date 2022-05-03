@@ -4,6 +4,7 @@ const { withdraw_test } = require(`./withdraw_test.js`);
 const { deposit_test } = require(`./deposit_test.js`);
 
 const { unlock_test } = require(`./unlock_test.js`);
+const { lock_test } = require(`./lock_test.js`);
 const { unlockAll_test } = require(`./unlockAll_test.js`);
 const {
   withdrawMultipleOfCollection_test,
@@ -15,4 +16,5 @@ describe("Unit Tests", function () {
   withdrawMultipleOfCollection_test();
   unlock_test();
   unlockAll_test();
+  lock_test();
 });

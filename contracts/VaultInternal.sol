@@ -34,7 +34,9 @@ contract VaultInternal is VerifySignature, Ownable {
 
     uint256 immutable timeUntilUnlockExpires = 2 hours;
 
-    mapping(address => mapping(uint256 => uint256)) timestampForSingleNFTUnlocked;
+    uint256 private massResetSingleNFTUnlockCounter;
+
+    mapping(uint256 => mapping(address => mapping(uint256 => uint256))) timestampForSingleNFTUnlocked;
 
     uint256 public timestampForAllNFTsUnlocked;
 
