@@ -51,6 +51,14 @@ contract LockedERC721 is ERC721Enumerable, Ownable {
         _mint(recipient, tokenId);
     }
 
+    function _transfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal override {
+        revert("LockedERC721: Token is soulbound");
+    }
+
     function exists(uint256 tokenId) public view returns (bool) {
         return _exists(tokenId);
     }

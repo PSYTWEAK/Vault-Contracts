@@ -4,7 +4,7 @@ const { unlockData } = require(`./unlock_data.js`);
 
 const deposit_test = () => {
   describe("Testing Deposit()", function () {
-    let vaultfactory, testNFT, vault;
+    let vaultfactory, testNFT, testNFT2, vault;
 
     let requiredNumberOfUnlockedNFTs = 10;
 
@@ -32,6 +32,7 @@ const deposit_test = () => {
       const TestNFT = await hre.ethers.getContractFactory("TestNFT");
 
       testNFT = await TestNFT.deploy();
+      testNFT2 = await TestNFT.deploy();
 
       /*                 Mint testNFTs                          */
 
@@ -40,6 +41,12 @@ const deposit_test = () => {
       await testNFT.setApprovalForAll(vault.address, true);
 
       await testNFT.connect(nonOwner).mint(20);
+
+      await testNFT2.mint(requiredNumberOfUnlockedNFTs);
+
+      await testNFT2.setApprovalForAll(vault.address, true);
+
+      await testNFT2.connect(nonOwner).setApprovalForAll(vault.address, true);
     });
     it("Depositing 3 test NFTs", async function () {
       let [owner] = await ethers.getSigners();
@@ -91,6 +98,19 @@ const deposit_test = () => {
 
       expect(hasFailed).to.equal(true);
       expect(balance).to.equal(20);
+    });
+    it("Depositing another 3 NFTs from another collection", async function () {
+      let [owner] = await ethers.getSigners();
+
+      await vault.deposit(testNFT2.address, 1);
+
+      await vault.deposit(testNFT2.address, 2);
+
+      await vault.deposit(testNFT2.address, 3);
+
+      let balance = await testNFT2.balanceOf(owner.address);
+
+      expect(balance).to.equal(7);
     });
   });
 };
