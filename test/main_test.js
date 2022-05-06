@@ -10,6 +10,10 @@ const {
   withdrawMultipleOfCollection_test,
 } = require(`./withdrawMultipleOfCollection_test.js`);
 
+const {
+  emergencyTransferOwnership_test,
+} = require(`./emergencyTransferOwnership_test.js`);
+
 describe("Unit Tests", function () {
   withdraw_test();
   deposit_test();
@@ -17,4 +21,5 @@ describe("Unit Tests", function () {
   unlock_test();
   unlockAll_test();
   lock_test();
+  emergencyTransferOwnership_test();
 });

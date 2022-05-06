@@ -62,7 +62,7 @@ const lock_test = () => {
       await network.provider.send("evm_mine");
     });
     it("lock token id 1", async function () {
-      await vault.lock(testNFT.address, 1);
+      await vault.lockAll();
     });
     it("Withdraw token id 1 after locking (should fail)", async function () {
       let [owner] = await ethers.getSigners();
@@ -85,7 +85,7 @@ const lock_test = () => {
       await vault.unlock(testNFT.address, 2);
     });
     it("lock token id 2", async function () {
-      await vault.lock(testNFT.address, 2);
+      await vault.lockAll();
     });
 
     it("Wait unlockDelay amount of time", async function () {
@@ -115,7 +115,7 @@ const lock_test = () => {
       let hasFailed = false;
 
       try {
-        await vault.connect(nonOwner).lock();
+        await vault.connect(nonOwner).lockAll();
       } catch (err) {
         hasFailed = true;
       }

@@ -36,27 +36,7 @@ contract Vault is VaultInternal {
     ================================================================ 
     */
 
-    //========================= Deposits ==============================
-
-    function deposit(address unlockedERC721, uint256 tokenId)
-        public
-        onlyOwner
-        checkLockedERC721Exists(unlockedERC721)
-    {
-        transferERC721(unlockedERC721, tokenId);
-        mintLockedToken(unlockedERC721, tokenId);
-    }
-
-    function depositMutipleOfCollection(
-        address unlockedERC721,
-        uint256[] memory tokenIds
-    ) public onlyOwner {
-        for (uint256 i; i < tokenIds.length; i++) {
-            deposit(unlockedERC721, tokenIds[i]);
-        }
-    }
-
-    function depositMutiple(
+    function deposit(
         address[] memory unlockedERC721s,
         uint256[][] memory tokenIds
     ) public onlyOwner {
@@ -65,7 +45,14 @@ contract Vault is VaultInternal {
         }
     }
 
-    //========================= Unlocks ==============================
+    function withdraw(
+        address[] memory unlockedERC721s,
+        uint256[][] memory tokenIds
+    ) public onlyOwner {
+        for (uint256 i; i < unlockedERC721s.length; i++) {
+            withdrawMultipleOfCollection(unlockedERC721s[i], tokenIds[i]);
+        }
+    }
 
     function unlock(address unlockedERC721, uint256 tokenId) public onlyOwner {
         whenSingleERC721Unlocked[currentUnlockedTimestampVersion][
@@ -77,61 +64,16 @@ contract Vault is VaultInternal {
         whenAllERC721Unlocked = block.timestamp + unlockDelay;
     }
 
-    //========================= locks ==============================
-
-    function lock(address unlockedERC721, uint256 tokenId) public onlyOwner {
-        whenSingleERC721Unlocked[currentUnlockedTimestampVersion][
-            unlockedERC721
-        ][tokenId] = 0;
-    }
-
     function lockAll() public onlyOwner {
         whenAllERC721Unlocked = 0;
         resetAllSingleERC721Timestamps();
     }
-
-    //========================= Withdraws ==============================
-
-    function withdraw(address unlockedERC721, uint256 tokenId)
-        public
-        onlyOwner
-        checkIsUnlocked(unlockedERC721, tokenId)
-    {
-        burnLockedToken(unlockedERC721, tokenId);
-        IUnlockedERC721(unlockedERC721).safeTransferFrom(
-            address(this),
-            msg.sender,
-            tokenId
-        );
-    }
-
-    function withdrawMultipleOfCollection(
-        address unlockedERC721,
-        uint256[] memory tokenIds
-    ) public onlyOwner {
-        for (uint256 i; i < tokenIds.length; i++) {
-            withdraw(unlockedERC721, tokenIds[i]);
-        }
-    }
-
-    function withdrawMultiple(
-        address[] memory unlockedERC721s,
-        uint256[][] memory tokenIds
-    ) public onlyOwner {
-        for (uint256 i; i < unlockedERC721s.length; i++) {
-            withdrawMultipleOfCollection(unlockedERC721s[i], tokenIds[i]);
-        }
-    }
-
-    //====================== Emergency ==============================
 
     function acceptEmergencyInviteForBackupAddressToTakeControl(
         bytes memory signature
     ) external onlyBackupAddress checkValidSignature(signature) {
         _transferOwnership(backupAddressForEmergency);
     }
-
-    //====================== initializing ==============================
 
     function transferOwnership(address owner) public override onlyOwner {
         require(!hasOwner, "Vault: Owner already set on creation");
@@ -145,18 +87,17 @@ contract Vault is VaultInternal {
     ================================================================ 
     */
 
-    function getWhenSingleERC721Unlock(address unlockedERC721, uint256 tokenId)
-        public
-        view
-        returns (uint256)
-    {
+    function getWhenSingleERC721Unlocked(
+        address unlockedERC721,
+        uint256 tokenId
+    ) public view returns (uint256) {
         return
             whenSingleERC721Unlocked[currentUnlockedTimestampVersion][
                 unlockedERC721
             ][tokenId];
     }
 
-    function getWhenAllERC721Unlock() public view returns (uint256) {
+    function getWhenAllERC721Unlocked() public view returns (uint256) {
         return whenAllERC721Unlocked;
     }
 

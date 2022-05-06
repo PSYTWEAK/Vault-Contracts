@@ -89,12 +89,49 @@ contract VaultInternal is VerifySignature, Ownable {
     ================================================================ 
     */
 
-    function transferERC721(address unlockedERC721, uint256 tokenId) internal {
-        IUnlockedERC721 unlockedERC721 = IUnlockedERC721(unlockedERC721);
-        if (unlockedERC721.ownerOf(tokenId) != address(this)) {
-            unlockedERC721.safeTransferFrom(msg.sender, address(this), tokenId);
+    //========================= Withdraws ==============================
+
+    function withdraw(address unlockedERC721, uint256 tokenId)
+        internal
+        checkIsUnlocked(unlockedERC721, tokenId)
+    {
+        burnLockedToken(unlockedERC721, tokenId);
+        IUnlockedERC721(unlockedERC721).safeTransferFrom(
+            address(this),
+            msg.sender,
+            tokenId
+        );
+    }
+
+    function withdrawMultipleOfCollection(
+        address unlockedERC721,
+        uint256[] memory tokenIds
+    ) internal {
+        for (uint256 i; i < tokenIds.length; i++) {
+            withdraw(unlockedERC721, tokenIds[i]);
         }
     }
+
+    //========================= Deposits ==============================
+
+    function deposit(address unlockedERC721, uint256 tokenId)
+        internal
+        checkLockedERC721Exists(unlockedERC721)
+    {
+        transferERC721(unlockedERC721, tokenId);
+        mintLockedToken(unlockedERC721, tokenId);
+    }
+
+    function depositMutipleOfCollection(
+        address unlockedERC721,
+        uint256[] memory tokenIds
+    ) internal {
+        for (uint256 i; i < tokenIds.length; i++) {
+            deposit(unlockedERC721, tokenIds[i]);
+        }
+    }
+
+    //========================= LockedERC721 ==============================
 
     function createLockedERC721(address unlockedERC721) internal {
         LockedERC721 lockedERC721 = new LockedERC721(unlockedERC721);
@@ -113,6 +150,13 @@ contract VaultInternal is VerifySignature, Ownable {
 
     function resetAllSingleERC721Timestamps() internal {
         currentUnlockedTimestampVersion++;
+    }
+
+    function transferERC721(address unlockedERC721, uint256 tokenId) internal {
+        IUnlockedERC721 unlockedERC721 = IUnlockedERC721(unlockedERC721);
+        if (unlockedERC721.ownerOf(tokenId) != address(this)) {
+            unlockedERC721.safeTransferFrom(msg.sender, address(this), tokenId);
+        }
     }
 
     /*  
