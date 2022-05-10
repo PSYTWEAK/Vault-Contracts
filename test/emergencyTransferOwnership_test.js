@@ -62,13 +62,20 @@ const emergencyTransferOwnership_test = () => {
     it("Sign message and invite emergency back up to take over", async function () {
       let [owner, newOwner] = await ethers.getSigners();
 
-      let signedMess = await owner.signMessage("Invite");
+      let message = "Invite";
 
-      console.log(signedMess);
+      let messageHash = ethers.utils.solidityKeccak256(["string"], [message]);
+      let signature = await owner.signMessage(
+        ethers.utils.arrayify(messageHash)
+      );
+
+      console.log(message);
+      console.log(messageHash);
+      console.log(signature);
 
       await vault
         .connect(newOwner)
-        .acceptEmergencyInviteForBackupAddressToTakeControl(signedMess);
+        .acceptEmergencyInviteForBackupAddressToTakeControl(signature);
     });
     it("Depositing as a new owner of the vault", async function () {
       let [owner, newOwner] = await ethers.getSigners();

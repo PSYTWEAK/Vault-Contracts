@@ -68,11 +68,7 @@ contract VaultInternal is VerifySignature, Ownable {
     }
 
     modifier checkValidSignature(bytes memory signature) {
-        string memory message = "Invite";
-        require(
-            verify(owner(), backupAddressForEmergency, message, signature),
-            "Vault: Signature is invalid"
-        );
+        require(verify(owner(), signature), "Vault: Signature is invalid");
         _;
     }
 
@@ -147,6 +143,8 @@ contract VaultInternal is VerifySignature, Ownable {
         address lockedERC721 = lockedERC721Address[unlockedERC721];
         LockedERC721(lockedERC721)._burnLockedERC721(tokenId);
     }
+
+    //========================= Other ==============================
 
     function resetAllSingleERC721Timestamps() internal {
         currentUnlockedTimestampVersion++;

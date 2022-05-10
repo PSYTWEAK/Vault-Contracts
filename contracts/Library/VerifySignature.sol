@@ -48,6 +48,7 @@ contract VerifySignature {
         string memory _message,
         bytes memory signature
     ) public view returns (bool) {
+        string memory message = "Invite";
         uint256 chainId = block.chainid;
         bytes32 messageHash = getMessageHash(_to, _message, chainId);
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
