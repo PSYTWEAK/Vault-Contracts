@@ -15,11 +15,11 @@ const {
 } = require(`./emergencyTransferOwnership_test.js`);
 
 describe("Unit Tests", function () {
-  /*   withdraw_test();
+  withdraw_test();
   deposit_test();
   withdrawMultipleOfCollection_test();
   unlock_test();
   unlockAll_test();
-  lock_test(); */
+  lock_test();
   emergencyTransferOwnership_test();
 });

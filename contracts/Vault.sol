@@ -17,6 +17,8 @@ $$ |   $$ |$$$$$$\  $$\   $$\ $$ |$$$$$$\
   / /\ / _ \/ _` |/ _` |/ / | | | | __| |/ _ \/ __|
  / /_//  __/ (_| | (_| / /__| |_| | |_| |  __/\__ \
 /___,' \___|\__,_|\__,_\____/\__,_|\__|_|\___||___/
+
+https://www.youtube.com/watch?v=3hoThry5WsY
 */
 
 contract Vault is VaultInternal {
@@ -36,6 +38,13 @@ contract Vault is VaultInternal {
     ================================================================ 
     */
 
+    /**
+     * Can be used to deposit multiple NFTs from multiple collections
+     * into the vault in a single tx. All deposited NFTs will be
+     * represented by wrapped instances sent to msg.sender eg 'lockedBoredApe'
+     * @param unlockedERC721s list of contract addresses for the NFTs you are depositing
+     * @param tokenIds list of lists of the NFT token Ids you are depositing
+     */
     function deposit(
         address[] memory unlockedERC721s,
         uint256[][] memory tokenIds
@@ -45,6 +54,12 @@ contract Vault is VaultInternal {
         }
     }
 
+    /**
+     * Can be used to withdraw multiple NFTs from the vault in a single tx
+     * providing those tokens have been unlocked using either unlock() or unlockAll()
+     * @param unlockedERC721s list of contract addresses for the NFTs you are withdrawing
+     * @param tokenIds list of lists of the NFT token Ids you are withdrawing
+     */
     function withdraw(
         address[] memory unlockedERC721s,
         uint256[][] memory tokenIds
@@ -54,27 +69,48 @@ contract Vault is VaultInternal {
         }
     }
 
+    /**
+     * Unlock a specific token in the vault, keeping the rest locked.
+     * @param unlockedERC721 contract address of the NFT you are unlocking
+     * @param tokenId token id of the NFT you are unlocking
+     */
     function unlock(address unlockedERC721, uint256 tokenId) public onlyOwner {
         whenSingleERC721Unlocked[currentUnlockedTimestampVersion][
             unlockedERC721
         ][tokenId] = block.timestamp + unlockDelay;
     }
 
+    /**
+     * Unlocks all tokens in the vault (includes all collections)
+     */
     function unlockAll() public onlyOwner {
         whenAllERC721Unlocked = block.timestamp + unlockDelay;
     }
 
+    /**
+     * Locks every token in the vault regardless of if they have been unlocked
+     * individually or via unlockAll()
+     */
     function lockAll() public onlyOwner {
         whenAllERC721Unlocked = 0;
         resetAllSingleERC721Timestamps();
     }
 
+    /**
+     * Transfers control of the vault over to the backup address
+     * this is to be used in emergencies when your private key has been compromised
+     * trigger this before the anyone is able to unlock your tokens.
+     * @param signature "Invite" hashed + signed by the owner on the vault off chain
+     */
     function acceptEmergencyInviteForBackupAddressToTakeControl(
         bytes memory signature
     ) external onlyBackupAddress checkValidSignature(signature) {
         _transferOwnership(backupAddressForEmergency);
     }
 
+    /**
+     * Only used when initalising the vault
+     */
     function transferOwnership(address owner) public override onlyOwner {
         require(!hasOwner, "Vault: Owner already set on creation");
         _transferOwnership(owner);
@@ -87,6 +123,11 @@ contract Vault is VaultInternal {
     ================================================================ 
     */
 
+    /**
+     * Get the exact timestamp an NFT will be unlocked and withdrawable
+     * @param unlockedERC721 contract address of the NFT
+     * @param tokenId token id of the NFT
+     */
     function getWhenSingleERC721Unlocked(
         address unlockedERC721,
         uint256 tokenId
@@ -97,8 +138,25 @@ contract Vault is VaultInternal {
             ][tokenId];
     }
 
+    /**
+     * Get the exact timestamp all NFTs in the vault will be unlocked
+     * and withdrawable
+     */
     function getWhenAllERC721Unlocked() public view returns (uint256) {
         return whenAllERC721Unlocked;
+    }
+
+    /**
+     * Gets the contracted address for the wrapped instant of
+     * the NFTs locked in the vault eg 'lockedBoredApe'
+     * @param unlockedERC721 contract address of the NFT inside the vault
+     */
+    function getLockedERC721(address unlockedERC721)
+        public
+        view
+        returns (address)
+    {
+        return lockedERC721Address[unlockedERC721];
     }
 
     function onERC721Received(

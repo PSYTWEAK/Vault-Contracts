@@ -23,6 +23,14 @@ $$ |  \$$$$$$$ |\$$$$$$$\   \$$$$  |\$$$$$$  |$$ |      \$$$$$$$ |
 contract VaultFactory {
     mapping(address => Vault) vaults;
 
+    /**
+     * Creates a new Vault and gives ownership to message sender
+     * Note: only message sender can deposit, unlock and withdraw
+     * from this vault.
+     * DO NOT SET backupAddressForEmergency TO AN ADDRESS WITH THE
+     * SAME PRIVATE KEY AS MESSAGE SENDER
+     * @param backupAddressForEmergency ownership of vault will be transfered to this address in case of PK compromise
+     */
     function createVault(address backupAddressForEmergency) public {
         Vault vault = new Vault(backupAddressForEmergency);
         vault.transferOwnership(msg.sender);
@@ -33,6 +41,10 @@ contract VaultFactory {
         vaults[msg.sender] = vault;
     }
 
+    /**
+     * Gets the contract address for an existing vault
+     * @param account the account which created the vault
+     */
     function getVault(address account) public view returns (address) {
         return address(vaults[account]);
     }

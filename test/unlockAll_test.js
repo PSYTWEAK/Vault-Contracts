@@ -60,7 +60,7 @@ const unlockAll_test = () => {
     it("Withdraw All", async function () {
       let [owner] = await ethers.getSigners();
 
-      await vault.withdrawMultipleOfCollection(testNFT.address, [1, 2, 3]);
+      await vault.withdraw([testNFT.address], [[1, 2, 3]]);
 
       requiredNumberOfUnlockedNFTs = requiredNumberOfUnlockedNFTs + 3;
 
@@ -93,7 +93,7 @@ const unlockAll_test = () => {
       let hasFailed = false;
 
       try {
-        await vault.withdraw(testNFT.address, 2);
+        await vault.withdraw([testNFT.address], [[2]]);
       } catch (err) {
         hasFailed = true;
       }
@@ -111,7 +111,7 @@ const unlockAll_test = () => {
     it("Withdraw all", async function () {
       let [owner] = await ethers.getSigners();
 
-      await vault.withdrawMultipleOfCollection(testNFT.address, [4, 5, 6]);
+      await vault.withdraw([testNFT.address], [[4, 5, 6]]);
 
       requiredNumberOfUnlockedNFTs = requiredNumberOfUnlockedNFTs + 3;
 

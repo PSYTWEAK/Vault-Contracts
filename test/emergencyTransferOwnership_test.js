@@ -55,34 +55,58 @@ const emergencyTransferOwnership_test = () => {
 
       expect(balance).to.equal(requiredNumberOfUnlockedNFTs);
     });
-    it("Sign message and invite emergency back up to take over", async function () {
-      let [owner, newOwner] = await ethers.getSigners();
+    it("Sign message and invite emergency back up to take over as non owner (should fail)", async function () {
+      let [owner, nonOwner] = await ethers.getSigners();
 
       let message = "Invite";
-
       let messageHash = await vault.getMessageHash(message);
-      let signature = await owner.signMessage(messageHash);
+      let signature = await nonOwner.signMessage(
+        ethers.utils.arrayify(messageHash)
+      );
       let ethSignedMessage = await vault.getEthSignedMessageHash(messageHash);
       let recoverSigner = await vault.recoverSigner(
         ethSignedMessage,
         signature
       );
 
-      console.log(`The message we signing: ${message}`);
-      console.log(`The hashed message: ${messageHash}`);
-      console.log(`The signature: ${signature}`);
-      console.log(`The ETH signed message: ${ethSignedMessage}`);
-      console.log(`The expected signer: ${owner.address}`);
-      console.log(`The signer: ${recoverSigner}`);
+      let hasFailed = false;
+
+      try {
+        await vault
+          .connect(nonOwner)
+          .acceptEmergencyInviteForBackupAddressToTakeControl(signature);
+      } catch (err) {
+        hasFailed = true;
+      }
+
+      expect(hasFailed).to.equal(true);
+      expect(recoverSigner).to.equal(nonOwner.address);
+    });
+
+    it("Sign message and invite emergency back up to take over", async function () {
+      let [owner, newOwner] = await ethers.getSigners();
+
+      let message = "Invite";
+      let messageHash = await vault.getMessageHash(message);
+      let signature = await owner.signMessage(
+        ethers.utils.arrayify(messageHash)
+      );
+      let ethSignedMessage = await vault.getEthSignedMessageHash(messageHash);
+      let recoverSigner = await vault.recoverSigner(
+        ethSignedMessage,
+        signature
+      );
 
       await vault
         .connect(newOwner)
         .acceptEmergencyInviteForBackupAddressToTakeControl(signature);
+
+      expect(recoverSigner).to.equal(owner.address);
     });
     it("Depositing as a new owner of the vault", async function () {
       let [owner, newOwner] = await ethers.getSigners();
 
-      await vault.connect(newOwner).deposit(testNFT.address, 12);
+      await vault.connect(newOwner).deposit([testNFT.address], [[12]]);
     });
   });
 };
