@@ -51,11 +51,7 @@ const deposit_test = () => {
     it("Depositing 3 test NFTs", async function () {
       let [owner] = await ethers.getSigners();
 
-      await vault.deposit(testNFT.address, 1);
-
-      await vault.deposit(testNFT.address, 2);
-
-      await vault.deposit(testNFT.address, 3);
+      await vault.deposit([testNFT.address], [[1, 2, 3]]);
 
       requiredNumberOfUnlockedNFTs = requiredNumberOfUnlockedNFTs - 3;
 
@@ -69,11 +65,7 @@ const deposit_test = () => {
       let hasFailed = false;
 
       try {
-        await vault.deposit(testNFT.address, 1);
-
-        await vault.deposit(testNFT.address, 2);
-
-        await vault.deposit(testNFT.address, 3);
+        await vault.deposit([testNFT.address], [[1, 2, 3]]);
       } catch (err) {
         hasFailed = true;
       }
@@ -89,7 +81,7 @@ const deposit_test = () => {
       let hasFailed = false;
 
       try {
-        await vault.connect(nonOwner).deposit(testNFT.address, 12);
+        await vault.connect(nonOwner).deposit([testNFT.address], [[12]]);
       } catch (err) {
         hasFailed = true;
       }
@@ -99,18 +91,24 @@ const deposit_test = () => {
       expect(hasFailed).to.equal(true);
       expect(balance).to.equal(20);
     });
-    it("Depositing another 3 NFTs from another collection", async function () {
+    it("Depositing more NFTs from multiple collection", async function () {
       let [owner] = await ethers.getSigners();
 
-      await vault.deposit(testNFT2.address, 1);
+      await vault.deposit(
+        [testNFT.address, testNFT2.address],
+        [
+          [4, 5],
+          [1, 2, 3],
+        ]
+      );
 
-      await vault.deposit(testNFT2.address, 2);
+      let balanceNFT = await testNFT.balanceOf(owner.address);
 
-      await vault.deposit(testNFT2.address, 3);
+      expect(balanceNFT).to.equal(5);
 
-      let balance = await testNFT2.balanceOf(owner.address);
+      let balanceNFT2 = await testNFT2.balanceOf(owner.address);
 
-      expect(balance).to.equal(7);
+      expect(balanceNFT2).to.equal(7);
     });
   });
 };

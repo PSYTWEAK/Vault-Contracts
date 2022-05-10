@@ -41,11 +41,7 @@ const unlockAll_test = () => {
 
       /*                 Deposit testNFTs                          */
 
-      await vault.deposit(testNFT.address, 1);
-
-      await vault.deposit(testNFT.address, 2);
-
-      await vault.deposit(testNFT.address, 3);
+      await vault.deposit([testNFT.address], [[1, 2, 3]]);
 
       requiredNumberOfUnlockedNFTs = requiredNumberOfUnlockedNFTs - 3;
 
@@ -74,11 +70,7 @@ const unlockAll_test = () => {
     });
     it("Deposit 3 more", async function () {
       let [owner] = await ethers.getSigners();
-      await vault.deposit(testNFT.address, 4);
-
-      await vault.deposit(testNFT.address, 5);
-
-      await vault.deposit(testNFT.address, 6);
+      await vault.deposit([testNFT.address], [[4, 5, 6]]);
 
       requiredNumberOfUnlockedNFTs = requiredNumberOfUnlockedNFTs - 3;
 

@@ -40,19 +40,9 @@ const withdrawMultipleOfCollection_test = () => {
 
       /*                 Deposit testNFTs                          */
 
-      await vault.deposit(testNFT.address, 1);
+      await vault.deposit([testNFT.address], [[1, 2, 3]]);
 
-      await vault.deposit(testNFT.address, 2);
-
-      await vault.deposit(testNFT.address, 3);
-
-      await vault.deposit(testNFT.address, 4);
-
-      await vault.deposit(testNFT.address, 5);
-
-      await vault.deposit(testNFT.address, 6);
-
-      await vault.deposit(testNFT.address, 7);
+      await vault.deposit([testNFT.address], [[4, 5, 6, 7]]);
 
       requiredNumberOfUnlockedNFTs = requiredNumberOfUnlockedNFTs - 7;
 
@@ -65,7 +55,7 @@ const withdrawMultipleOfCollection_test = () => {
       let hasFailed = false;
 
       try {
-        await vault.withdrawMultipleOfCollection(testNFT.address, [1, 2]);
+        await vault.withdraw([testNFT.address], [[1, 2]]);
       } catch (err) {
         hasFailed = true;
       }
@@ -87,7 +77,7 @@ const withdrawMultipleOfCollection_test = () => {
     it("Withdraw token id 1", async function () {
       let [owner] = await ethers.getSigners();
 
-      await vault.withdrawMultipleOfCollection(testNFT.address, [1, 2]);
+      await vault.withdraw([testNFT.address], [[1, 2]]);
 
       requiredNumberOfUnlockedNFTs = requiredNumberOfUnlockedNFTs + 2;
 
@@ -101,7 +91,7 @@ const withdrawMultipleOfCollection_test = () => {
       let hasFailed = false;
 
       try {
-        await vault.withdrawMultipleOfCollection(testNFT.address, [3, 4]);
+        await vault.withdraw([testNFT.address], [[3, 4]]);
       } catch (err) {
         hasFailed = true;
       }
@@ -122,7 +112,7 @@ const withdrawMultipleOfCollection_test = () => {
     it("Withdraw token id 3 & 4", async function () {
       let [owner] = await ethers.getSigners();
 
-      await vault.withdrawMultipleOfCollection(testNFT.address, [3, 4]);
+      await vault.withdraw([testNFT.address], [[3, 4]]);
 
       requiredNumberOfUnlockedNFTs = requiredNumberOfUnlockedNFTs + 2;
 
@@ -137,9 +127,7 @@ const withdrawMultipleOfCollection_test = () => {
       let hasFailed = false;
 
       try {
-        await vault
-          .connect(nonOwner)
-          .withdrawMultipleOfCollection(testNFT.address, [5, 6]);
+        await vault.connect(nonOwner).withdraw([testNFT.address], [[5, 6]]);
       } catch (err) {
         hasFailed = true;
       }
@@ -152,7 +140,7 @@ const withdrawMultipleOfCollection_test = () => {
     it("Withdraw single token id 7", async function () {
       let [owner] = await ethers.getSigners();
 
-      await vault.withdrawMultipleOfCollection(testNFT.address, [7]);
+      await vault.withdraw([testNFT.address], [[7]]);
 
       requiredNumberOfUnlockedNFTs = requiredNumberOfUnlockedNFTs + 1;
 
@@ -164,7 +152,7 @@ const withdrawMultipleOfCollection_test = () => {
       let [owner] = await ethers.getSigners();
 
       try {
-        await vault.withdrawMultipleOfCollection(testNFT.address, [7]);
+        await vault.withdraw([testNFT.address], [[7]]);
       } catch (err) {
         hasFailed = true;
       }

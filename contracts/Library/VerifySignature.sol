@@ -16,12 +16,13 @@ How to Sign and Verify
 */
 
 contract VerifySignature {
-    function getMessageHash(
-        address _to,
-        string memory _message,
-        uint256 _chainId
-    ) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(_to, _message, _chainId));
+    function getMessageHash(string memory _message)
+        public
+        view
+        returns (bytes32)
+    {
+        uint256 chainId = block.chainid;
+        return keccak256(abi.encodePacked(_message, chainId));
     }
 
     function getEthSignedMessageHash(bytes32 _messageHash)
@@ -42,15 +43,13 @@ contract VerifySignature {
             );
     }
 
-    function verify(
-        address _signer,
-        address _to,
-        string memory _message,
-        bytes memory signature
-    ) public view returns (bool) {
+    function verify(address _signer, bytes memory signature)
+        public
+        view
+        returns (bool)
+    {
         string memory message = "Invite";
-        uint256 chainId = block.chainid;
-        bytes32 messageHash = getMessageHash(_to, _message, chainId);
+        bytes32 messageHash = getMessageHash(message);
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
 
         return recoverSigner(ethSignedMessageHash, signature) == _signer;

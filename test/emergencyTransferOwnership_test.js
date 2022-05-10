@@ -47,11 +47,7 @@ const emergencyTransferOwnership_test = () => {
     it("Depositing 3 test NFTs", async function () {
       let [owner] = await ethers.getSigners();
 
-      await vault.deposit(testNFT.address, 1);
-
-      await vault.deposit(testNFT.address, 2);
-
-      await vault.deposit(testNFT.address, 3);
+      await vault.deposit([testNFT.address], [[1, 2, 3]]);
 
       requiredNumberOfUnlockedNFTs = requiredNumberOfUnlockedNFTs - 3;
 
@@ -64,14 +60,20 @@ const emergencyTransferOwnership_test = () => {
 
       let message = "Invite";
 
-      let messageHash = ethers.utils.solidityKeccak256(["string"], [message]);
-      let signature = await owner.signMessage(
-        ethers.utils.arrayify(messageHash)
+      let messageHash = await vault.getMessageHash(message);
+      let signature = await owner.signMessage(messageHash);
+      let ethSignedMessage = await vault.getEthSignedMessageHash(messageHash);
+      let recoverSigner = await vault.recoverSigner(
+        ethSignedMessage,
+        signature
       );
 
-      console.log(message);
-      console.log(messageHash);
-      console.log(signature);
+      console.log(`The message we signing: ${message}`);
+      console.log(`The hashed message: ${messageHash}`);
+      console.log(`The signature: ${signature}`);
+      console.log(`The ETH signed message: ${ethSignedMessage}`);
+      console.log(`The expected signer: ${owner.address}`);
+      console.log(`The signer: ${recoverSigner}`);
 
       await vault
         .connect(newOwner)

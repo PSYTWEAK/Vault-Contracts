@@ -40,11 +40,7 @@ const withdraw_test = () => {
 
       /*                 Deposit testNFTs                          */
 
-      await vault.deposit(testNFT.address, 1);
-
-      await vault.deposit(testNFT.address, 2);
-
-      await vault.deposit(testNFT.address, 3);
+      await vault.deposit([testNFT.address], [[1, 2, 3]]);
 
       requiredNumberOfUnlockedNFTs = requiredNumberOfUnlockedNFTs - 3;
 
@@ -57,7 +53,7 @@ const withdraw_test = () => {
       let hasFailed = false;
 
       try {
-        await vault.withdraw(testNFT.address, 1);
+        await vault.withdraw([testNFT.address], [[1]]);
       } catch (err) {
         hasFailed = true;
       }
@@ -78,7 +74,7 @@ const withdraw_test = () => {
     it("Withdraw token id 1", async function () {
       let [owner] = await ethers.getSigners();
 
-      await vault.withdraw(testNFT.address, 1);
+      await vault.withdraw([testNFT.address], [[1]]);
 
       requiredNumberOfUnlockedNFTs = requiredNumberOfUnlockedNFTs + 1;
 
@@ -92,7 +88,7 @@ const withdraw_test = () => {
       let hasFailed = false;
 
       try {
-        await vault.withdraw(testNFT.address, 2);
+        await vault.withdraw([testNFT.address], [[2]]);
       } catch (err) {
         hasFailed = true;
       }
@@ -113,7 +109,7 @@ const withdraw_test = () => {
     it("Withdraw token id 2", async function () {
       let [owner] = await ethers.getSigners();
 
-      await vault.withdraw(testNFT.address, 2);
+      await vault.withdraw([testNFT.address], [[2]]);
 
       requiredNumberOfUnlockedNFTs = requiredNumberOfUnlockedNFTs + 1;
 
@@ -128,7 +124,7 @@ const withdraw_test = () => {
       let hasFailed = false;
 
       try {
-        await vault.connect(nonOwner).withdraw(testNFT.address, 2);
+        await vault.connect(nonOwner).withdraw([testNFT.address], [[2]]);
       } catch (err) {
         hasFailed = true;
       }
@@ -141,7 +137,7 @@ const withdraw_test = () => {
     it("Withdraw token id 3", async function () {
       let [owner] = await ethers.getSigners();
 
-      await vault.withdraw(testNFT.address, 3);
+      await vault.withdraw([testNFT.address], [[3]]);
 
       requiredNumberOfUnlockedNFTs = requiredNumberOfUnlockedNFTs + 1;
 

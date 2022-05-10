@@ -41,11 +41,7 @@ const unlock_test = () => {
 
       /*                 Deposit testNFTs                          */
 
-      await vault.deposit(testNFT.address, 1);
-
-      await vault.deposit(testNFT.address, 2);
-
-      await vault.deposit(testNFT.address, 3);
+      await vault.deposit([testNFT.address], [[1, 2, 3]]);
 
       requiredNumberOfUnlockedNFTs = requiredNumberOfUnlockedNFTs - 3;
 
