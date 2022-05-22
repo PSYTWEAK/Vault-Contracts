@@ -6,31 +6,65 @@
 const hre = require("hardhat");
 
 async function main() {
-  let vaultfactory, testNFT, vault;
-
-  const Vaultfactory = await hre.ethers.getContractFactory("VaultFactory");
-  vaultfactory = await Vaultfactory.deploy();
-  console.log("Vaultfactory deployed to:", vaultfactory.address);
-
-  const TestNFT = await hre.ethers.getContractFactory("TestNFT");
-  testNFT = await TestNFT.deploy();
-  console.log("TestNFT deployed to:", testNFT.address);
-
-  await testNFT.mint(10);
   let [owner] = await ethers.getSigners();
-  await vaultfactory.createVault(testNFT.address, owner.address);
+  /*                 Deploy factory                          */
 
-  const vaultAddr = await vaultfactory.getVault(owner.address, testNFT.address);
+  /*   const Vaultfactory = await hre.ethers.getContractFactory("VaultFactory");
+
+  const vaultfactory = await Vaultfactory.deploy();
+
+  console.log(`VaultFactory deployed at: ${vaultfactory.address}`); */
+
+  /*                 Create Vault                          */
+
+  //   await vaultfactory.createVault(owner.address);
+
+  // const vaultAddr = await vaultfactory.getVault(owner.address);
 
   const Vault = await hre.ethers.getContractFactory("Vault");
-  vault = await Vault.attach(vaultAddr);
-  console.log("Vault deployed to:", vaultAddr);
 
-  await testNFT.setApprovalForAll(vault.address, true);
+  const vault = await Vault.attach(
+    "0x8a579a8355f078F06B4293c57eAeADF97173A249"
+  );
 
-  await vault.deposit(1);
-  await vault.deposit(2);
-  await vault.deposit(3);
+  console.log(`Vault created at: ${vault.address}`);
+
+  const TestNFT = await hre.ethers.getContractFactory("TestNFT");
+
+  const testNFT = await TestNFT.attach(
+    "0x3687aBa716bE597155ccEC1b0ae60F442989190c"
+  );
+
+  console.log(`TestNFT deployed at: ${testNFT.address}`);
+
+  await vault.deposit([testNFT.address], [[3, 4, 5]]);
+  await testNFT.mint(3);
+  await testNFT.mint(3);
+  await testNFT.mint(3);
+
+  await vault.deposit([testNFT.address], [[6, 7, 8]]);
+
+  /*                 Deploy testNFT                         */
+
+  /*                 Mint testNFTs                          */
+
+  /*   await testNFT.mint(3);
+  await testNFT.mint(3);
+  await testNFT.mint(3);
+  await testNFT.mint(3);
+  await testNFT.mint(3); npx hardhat verify --network arbitrum 0x8a579a8355f078F06B4293c57eAeADF97173A249 "0xEE4076E241a03aA624a2049312C0ec3A25c69227"
+  await testNFT.mint(3);
+  await testNFT.mint(3);
+  await testNFT.mint(3);
+  await testNFT.mint(3);
+  await testNFT.mint(3);
+  await testNFT.mint(3);
+
+  await testNFT.setApprovalForAll(vault.address, true); */
+
+  /*                 Deposit testNFTs                         */
+
+  // await vault.deposit([testNFT.address], [[1, 2, 3]]);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

@@ -4,6 +4,7 @@ const { withdraw_test } = require(`./withdraw_test.js`);
 const { deposit_test } = require(`./deposit_test.js`);
 
 const { unlock_test } = require(`./unlock_test.js`);
+const { transfer_test } = require(`./transfer_test.js`);
 const { lock_test } = require(`./lock_test.js`);
 const { unlockAll_test } = require(`./unlockAll_test.js`);
 const {
@@ -22,4 +23,5 @@ describe("Unit Tests", function () {
   unlockAll_test();
   lock_test();
   emergencyTransferOwnership_test();
+  transfer_test();
 });
