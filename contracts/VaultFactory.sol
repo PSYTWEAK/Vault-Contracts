@@ -38,6 +38,10 @@ contract VaultFactory {
     }
 
     function storeVault(Vault vault) internal {
+        require(
+            address(vaults[msg.sender]) == address(0),
+            "VaultFactory: a vault has already been assigned to this address"
+        );
         vaults[msg.sender] = vault;
     }
 
