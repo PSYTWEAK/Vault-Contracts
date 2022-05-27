@@ -56,18 +56,10 @@ const transfer_test = () => {
     });
     it("transfer locked token (should fail)", async function () {
       let [owner, nonOwner] = await ethers.getSigners();
-      let hasFailed = false;
 
-      try {
-        await lockedERC721.transferFrom(owner.address, nonOwner.address, 1);
-      } catch (err) {
-        hasFailed = true;
-      }
-
-      let balance = await lockedERC721.balanceOf(owner.address);
-
-      expect(balance).to.equal(requiredNumberOfLockedNFTs);
-      expect(hasFailed).to.equal(true);
+      await expect(
+        lockedERC721.transferFrom(owner.address, nonOwner.address, 1)
+      ).to.be.revertedWith("LockedERC721: Token is soulbound");
     });
   });
 };
